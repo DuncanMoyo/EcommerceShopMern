@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { auth } from "../../firebase";
 import { toast } from "react-toastify";
+import {useDispatch, useSelector} from 'react-redux'
+import {createOrUpdateUser} from '../../functions/auth'
 
 const RegisterComplete = ({ history }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { user } = useSelector((state) => ({ ...state }));
+  let dispatch = useDispatch()
 
   useEffect(() => {
     console.log(window.localStorage.getItem("emailForRegistration"));
@@ -40,6 +45,25 @@ const RegisterComplete = ({ history }) => {
         console.log('user:', user,);
         console.log('idTokenResult:', idTokenResult);
         //then populate user in redux store
+
+        createOrUpdateUser(idTokenResult.token)
+        .then(
+          // res => console.log('CREATE OR UPDATE RESPONSE', res)
+          (res) => {
+            dispatch({
+              type: "LOGGED_IN_USER",
+              payload: {
+                name: res.data.name,
+                email: res.data.email,
+                // token: idTokenResult
+                token: idTokenResult.token,
+                role: res.data.role,
+                _id: res.data._id,
+              },
+            });
+          }
+        )
+        .catch();
 
         // and redirect
         history.push('/')
