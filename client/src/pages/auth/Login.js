@@ -3,7 +3,7 @@ import { auth, googleAuthProvider } from "../../firebase";
 import { toast } from "react-toastify";
 import { Button } from "antd";
 import { MailOutlined, GoogleOutlined } from "@ant-design/icons";
-import {createOrUpdateUser} from '../../functions/auth'
+import { createOrUpdateUser } from "../../functions/auth";
 
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -21,6 +21,14 @@ const Login = ({ history }) => {
 
   let dispatch = useDispatch();
 
+  const roleBasedRedirect = (res) => {
+    if (res.data.role === "admin") {
+      history.push("/admin/dashboard");
+    } else {
+      history.push("/user/history");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -32,24 +40,21 @@ const Login = ({ history }) => {
       const idTokenResult = await user.getIdTokenResult();
 
       createOrUpdateUser(idTokenResult.token)
-        .then(
-          // res => console.log('CREATE OR UPDATE RESPONSE', res)
-          (res) => {
-            dispatch({
-              type: "LOGGED_IN_USER",
-              payload: {
-                name: res.data.name,
-                email: res.data.email,
-                // token: idTokenResult
-                token: idTokenResult.token,
-                role: res.data.role,
-                _id: res.data._id,
-              },
-            });
-          }
-        )
-        .catch(error =>console.log(error));
-      history.push("/");
+        .then((res) => {
+          dispatch({
+            type: "LOGGED_IN_USER",
+            payload: {
+              name: res.data.name,
+              email: res.data.email,
+              token: idTokenResult.token,
+              role: res.data.role,
+              _id: res.data._id,
+            },
+          });
+          roleBasedRedirect(res);
+        })
+        .catch((error) => console.log(error));
+      // history.push("/");
     } catch (error) {
       console.log(error);
       toast.error(error.message);
@@ -65,24 +70,21 @@ const Login = ({ history }) => {
         const idTokenResult = await user.getIdTokenResult();
         // should be making requests to our own backend based on the user role, thi will do for now
         createOrUpdateUser(idTokenResult.token)
-        .then(
-          // res => console.log('CREATE OR UPDATE RESPONSE', res)
-          (res) => {
+          .then((res) => {
             dispatch({
               type: "LOGGED_IN_USER",
               payload: {
                 name: res.data.name,
                 email: res.data.email,
-                // token: idTokenResult
                 token: idTokenResult.token,
                 role: res.data.role,
                 _id: res.data._id,
               },
             });
-          }
-        )
-        .catch(error =>console.log(error));
-        history.push("/");
+            roleBasedRedirect(res);
+          })
+          .catch((error) => console.log(error));
+        // history.push("/");
       })
       .catch((error) => {
         console.log(error);
