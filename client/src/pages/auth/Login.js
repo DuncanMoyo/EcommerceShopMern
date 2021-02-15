@@ -9,8 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 const Login = ({ history }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("duncanfmoyo@gmail.com");
+  const [password, setPassword] = useState("qwerty123");
   const [loading, setLoading] = useState(false);
 
   const { user } = useSelector((state) => ({ ...state }));
